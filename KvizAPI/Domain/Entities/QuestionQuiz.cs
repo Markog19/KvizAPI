@@ -4,7 +4,7 @@ namespace KvizAPI.Domain.Entities
 {
     public class QuestionQuiz
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        // Removed surrogate Id to use composite key (QuestionId, QuizId)
         public Guid QuestionId { get; set; }
         public Question? Question { get; set; }
 
