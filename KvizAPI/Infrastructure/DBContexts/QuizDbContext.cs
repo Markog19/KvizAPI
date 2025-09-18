@@ -19,7 +19,7 @@ namespace KvizAPI.Infrastructure.DBContexts
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<QuestionQuiz>()
-                .HasKey(qt => new { qt.QuestionId, qt.QuizId });
+                .HasKey(qt => qt.Id);
 
             modelBuilder.Entity<QuestionQuiz>()
                 .HasOne(qt => qt.Question)
@@ -30,6 +30,10 @@ namespace KvizAPI.Infrastructure.DBContexts
                 .HasOne(qt => qt.Quiz)
                 .WithMany(qz => qz.QuestionQuizzes)
                 .HasForeignKey(qt => qt.QuizId);
+
+            // Global query filter to implement soft-delete for the join table
+            modelBuilder.Entity<QuestionQuiz>()
+                .HasQueryFilter(qt => !qt.IsDeleted);
 
             modelBuilder.Entity<Quiz>()
                 .HasIndex(q => q.Name)
