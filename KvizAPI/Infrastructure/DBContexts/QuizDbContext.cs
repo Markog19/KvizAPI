@@ -12,16 +12,15 @@ namespace KvizAPI.Infrastructure.DBContexts
         public DbSet<Quiz> Quizzes { get; set; } = null!;
         public DbSet<Question> Questions { get; set; } = null!;
         public DbSet<QuestionQuiz> QuestionQuizzes { get; set; } = null!;
+        public DbSet<User> Users { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure composite key for join table
             modelBuilder.Entity<QuestionQuiz>()
                 .HasKey(qt => new { qt.QuestionId, qt.QuizId });
 
-            // Configure relationships
             modelBuilder.Entity<QuestionQuiz>()
                 .HasOne(qt => qt.Question)
                 .WithMany(q => q.QuestionQuizzes)
@@ -32,10 +31,16 @@ namespace KvizAPI.Infrastructure.DBContexts
                 .WithMany(qz => qz.QuestionQuizzes)
                 .HasForeignKey(qt => qt.QuizId);
 
-            // Add index on Quiz.Name for faster lookups
             modelBuilder.Entity<Quiz>()
                 .HasIndex(q => q.Name)
                 .HasDatabaseName("IX_Quizzes_Name");
+
+            modelBuilder.Entity<Quiz>()
+                .HasOne(q => q.User)
+                .WithMany(u => u.Quizzes)
+                .HasForeignKey(q => q.UserId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
         }
     }
 }

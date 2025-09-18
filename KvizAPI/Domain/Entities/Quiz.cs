@@ -13,5 +13,9 @@ namespace KvizAPI.Domain.Entities
         public List<Question>? Questions { get; set; }
 
         public List<QuestionQuiz>? QuestionQuizzes { get; set; }
+
+        // Relationship to User (owner/creator) - required
+        public Guid UserId { get; set; }
+        public User? User { get; set; }
     }
 }
