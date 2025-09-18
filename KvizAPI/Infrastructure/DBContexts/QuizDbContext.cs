@@ -13,11 +13,9 @@ namespace KvizAPI.Infrastructure.DBContexts
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure composite key for join table
             modelBuilder.Entity<QuestionQuiz>()
-                .HasKey(qt => new { qt.QuestionId, qt.QuizId });
+                .HasKey(qt => qt.Id);
 
-            // Configure relationships
             modelBuilder.Entity<QuestionQuiz>()
                 .HasOne(qt => qt.Question)
                 .WithMany(q => q.QuestionQuizzes)
