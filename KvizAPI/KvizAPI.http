@@ -1,0 +1,6 @@
+@KvizAPI_HostAddress = http://localhost:5113
+
+GET {{KvizAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

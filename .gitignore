@@ -1,0 +1,64 @@
+# Visual Studio / .NET gitignore
+# See https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
+
+## Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## Build results
+[Bb]in/
+[Oo]bj/
+out/
+publish/
+
+## NuGet
+*.nupkg
+*.snupkg
+packages/
+.project.lock.json
+project.fragment.lock.json
+.nuget/
+
+## Rider
+.idea/
+*.sln.iml
+
+## Resharper
+_ReSharper*/
+*.DotSettings.user
+
+## Test results
+TestResults/
+
+## Logs
+*.log
+
+## Visual Studio Code
+.vscode/
+
+## OS Generated
+.DS_Store
+Thumbs.db
+
+## Database
+*.db
+*.db-shm
+*.db-wal
+
+## User secrets / local settings
+secrets.json
+appsettings.Development.json
+
+# Publish / deployment
+*.Publish.xml
+
+# Temporary files
+*.tmp
+*.temp
+
+# Other
+*.userprefs
+
