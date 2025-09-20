@@ -1,44 +1,49 @@
 using Microsoft.AspNetCore.Mvc;
 using KvizAPI.Application.DTO;
+using KvizAPI.Domain.Interfaces;
 
 namespace KvizAPI.Presentation.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class QuizController : ControllerBase
+    public class QuizController(IQuizService quizService) : ControllerBase
     {
+        
+
         [HttpGet]
-        public ActionResult<IEnumerable<QuizDto>> GetAll()
+        public async Task<ActionResult<IEnumerable<QuizDto>>> GetAll()
         {
-            throw new NotImplementedException();
+            var quizzes = await quizService.GetAllQuizzesAsync();
+            return Ok(quizzes);
         }
 
-        // GET: api/quiz/{id}
-        [HttpGet("{id}")]
-        public ActionResult<QuizDto> Get(Guid id)
-        {
-            throw new NotImplementedException();
-        }
+       
 
         // POST: api/quiz
         [HttpPost]
-        public ActionResult<QuizDto> Create([FromBody] QuizDto quiz)
+        public async Task<ActionResult> Create([FromBody] QuizDto quiz)
         {
-            throw new NotImplementedException();
+            if (quiz == null) return BadRequest();
+
+            await quizService.CreateQuizAsync(quiz.Id, quiz.Name ?? string.Empty, quiz.Questions ?? new List<QuestionDto>());
+            return CreatedAtAction(nameof(Create), new { id = quiz.Id }, null);
         }
 
         // PUT: api/quiz/{id}
         [HttpPut("{id}")]
-        public IActionResult Update(Guid id, [FromBody] QuizDto quiz)
+        public async Task<IActionResult> Update(Guid id, [FromBody] QuizDto quiz)
         {
-            throw new NotImplementedException();
+            if (quiz == null) return BadRequest();
+            await quizService.UpdateQuizAsync(id, quiz.Name ?? string.Empty, quiz.Questions ?? new List<QuestionDto>());
+            return Ok();
         }
 
         // DELETE: api/quiz/{id}
         [HttpDelete("{id}")]
-        public IActionResult Delete(Guid id)
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
-            throw new NotImplementedException();
+            await quizService.DeleteQuizAsync(id);
+            return Ok();
         }
     }
 }
