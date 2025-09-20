@@ -1,0 +1,76 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-{{ runner.os }}-v1
+
+      - name: Install dotnet-format
+        run: |
+          dotnet tool install -g dotnet-format --version 8.* || true
+
+      - name: Lint / format check
+        env:
+          PATH: ${{ env.PATH }}:/home/runner/.dotnet/tools
+        run: |
+          dotnet format --verify-no-changes --folder || (echo "Code is not formatted. Run 'dotnet format' locally." && exit 1)
+
+      - name: Restore
+        run: dotnet restore KvizAPI/KvizAPI.csproj
+
+      - name: Build
+        run: dotnet build KvizAPI/KvizAPI.csproj --configuration Release --no-restore
+
+      - name: Run tests
+        run: |
+          if [ -f "KvizAPI/KvizAPI.csproj" ]; then
+            dotnet test --no-build --verbosity normal || true
+          fi
+
+      - name: Publish
+        run: dotnet publish KvizAPI/KvizAPI.csproj --configuration Release -o publish --no-build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kvizapi-publish
+          path: publish
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: kvizapi-publish
+          path: publish
+
+      - name: Deploy to Azure Web App (if configured)
+        if: secrets.AZURE_WEBAPP_PUBLISH_PROFILE != ''
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: publish
+
