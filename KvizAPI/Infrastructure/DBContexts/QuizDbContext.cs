@@ -31,7 +31,6 @@ namespace KvizAPI.Infrastructure.DBContexts
                 .WithMany(qz => qz.QuestionQuizzes)
                 .HasForeignKey(qt => qt.QuizId);
 
-            // Global query filter to implement soft-delete for the join table
             modelBuilder.Entity<QuestionQuiz>()
                 .HasQueryFilter(qt => !qt.IsDeleted);
 
@@ -45,6 +44,15 @@ namespace KvizAPI.Infrastructure.DBContexts
                 .HasForeignKey(q => q.UserId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
+
+            modelBuilder.Entity<Quiz>()
+                .HasQueryFilter(q => q.IsDeleted != true);
+
+            modelBuilder.Entity<Question>()
+                .HasQueryFilter(q => q.IsDeleted != true);
+
+            modelBuilder.Entity<User>()
+                .HasQueryFilter(u => u.IsDeleted != true);
         }
     }
 }
