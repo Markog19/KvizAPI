@@ -2,9 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
@@ -24,15 +24,15 @@ jobs:
           path: ~/.nuget/packages
           key: nuget-{{ runner.os }}-v1
 
-      - name: Install dotnet-format
+      - name: Setup dotnet tools
         run: |
-          dotnet tool install -g dotnet-format --version 8.* || true
+          dotnet new tool-manifest --force
+          dotnet tool install dotnet-format --version 8.* || true
+          dotnet tool restore
 
       - name: Lint / format check
-        env:
-          PATH: ${{ env.PATH }}:/home/runner/.dotnet/tools
         run: |
-          dotnet format --verify-no-changes --folder || (echo "Code is not formatted. Run 'dotnet format' locally." && exit 1)
+          dotnet tool run dotnet-format KvizAPI/KvizAPI.csproj --verify-no-changes --verbosity minimal
 
       - name: Restore
         run: dotnet restore KvizAPI/KvizAPI.csproj
@@ -60,7 +60,7 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
-      AZURE_WEBAPP_PUBLISH_PROFILE: ''
+      AZURE_WEBAPP_PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
     steps:
       - name: Download artifact
         uses: actions/download-artifact@v4
