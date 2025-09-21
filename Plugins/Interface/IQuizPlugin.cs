@@ -1,5 +1,6 @@
-using KvizAPI.Application.DTO;
+using Plugins.DTOs;
 
+namespace Plugins.Interface;
 public interface IQuizPlugin
 {
     string Name { get; }

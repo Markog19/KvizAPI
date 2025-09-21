@@ -1,5 +1,5 @@
-using KvizAPI.Application.DTO;
 using KvizAPI.Domain.Entities;
+using Plugins.DTOs;
 
 namespace KvizAPI.Application.Extensions
 {

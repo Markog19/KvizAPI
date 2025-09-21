@@ -1,6 +1,6 @@
 using System;
 
-namespace KvizAPI.Application.DTO
+namespace Plugins.DTOs
 {
     public class QuestionDto
     {

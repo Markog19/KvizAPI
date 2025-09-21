@@ -5,7 +5,9 @@ using KvizAPI.Infrastructure.DBContexts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Plugins.Interface;
 using System.Composition.Hosting;
+using System.Reflection;
 
 namespace KvizAPI.Presentation.Controllers
 {
@@ -17,10 +19,16 @@ namespace KvizAPI.Presentation.Controllers
         private readonly QuizDbContext _dbContext;
 
         public IQuizService _quizService { get; }
-
+        //C:\\Users\\User\\source\\repos\\KvizAPI\\KvizAPI\\bin\\Debug\\net8.0\\
         public ExportController(QuizDbContext dbContext, IQuizService quizService)
         {
-            var config = new ContainerConfiguration().WithAssembly(typeof(Program).Assembly);
+            var root = AppContext.BaseDirectory;
+            var pluginPath = Path.GetFullPath(
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Plugins", "bin", "Debug", "net8.0")
+            );
+            var pluginAssemblies = Directory.GetFiles(pluginPath, "*.dll")
+                .Select(Assembly.LoadFrom);
+            var config = new ContainerConfiguration().WithAssemblies(pluginAssemblies);
             using var container = config.CreateContainer();
             Plugins = container.GetExports<IQuizPlugin>();
             _dbContext = dbContext;

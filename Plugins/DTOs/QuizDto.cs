@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Generic;
 
-namespace KvizAPI.Application.DTO
+
+namespace Plugins.DTOs
 {
     public class QuizDto
     {

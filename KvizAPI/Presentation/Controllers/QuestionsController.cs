@@ -2,6 +2,7 @@
 using KvizAPI.Domain.Interfaces;
 using KvizAPI.Application.DTO;
 using Microsoft.AspNetCore.Authorization;
+using Plugins.DTOs;
 
 namespace KvizAPI.Presentation.Controllers
 {

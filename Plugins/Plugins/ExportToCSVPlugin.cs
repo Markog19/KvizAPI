@@ -1,4 +1,5 @@
-using KvizAPI.Application.DTO;
+using Plugins.DTOs;
+using Plugins.Interface;
 using System.Composition;
 using System.Text;
 

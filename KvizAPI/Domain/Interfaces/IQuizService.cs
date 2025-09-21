@@ -1,4 +1,5 @@
 ﻿using KvizAPI.Application.DTO;
+using Plugins.DTOs;
 
 namespace KvizAPI.Domain.Interfaces
 {

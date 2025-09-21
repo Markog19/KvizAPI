@@ -20,7 +20,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Application\Plugins\" />
     <Folder Include="Migrations\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Plugins\Plugins.csproj" />
   </ItemGroup>
 
   <ItemGroup>

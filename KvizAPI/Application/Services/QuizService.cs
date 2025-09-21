@@ -5,6 +5,7 @@ using KvizAPI.Domain.Interfaces;
 using KvizAPI.Infrastructure.DBContexts;
 using KvizAPI.Domain.Entities;
 using KvizAPI.Application.Extensions;
+using Plugins.DTOs;
 
 namespace KvizAPI.Application.Services
 {
