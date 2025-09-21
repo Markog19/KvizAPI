@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using KvizAPI.Application.Services;
+using KvizAPI.Domain.Interfaces;
 
 namespace KvizAPI.Presentation
 {
@@ -17,17 +18,16 @@ namespace KvizAPI.Presentation
     {
         public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
         {
-
             services.AddDbContext<QuizDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
-            // bind auth options
+            services.Configure<AuthOptions>(configuration.GetSection("AuthOptions"));
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IQuizService, QuizService>();
+            services.AddScoped<IQuestionsService, QuestionsService>();
             var authOptions = configuration
                 .GetSection("AuthOptions")
                 .Get<AuthOptions>();
-
-            services.AddSingleton(authOptions);
-            services.AddScoped<AuthService>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
@@ -44,7 +44,7 @@ namespace KvizAPI.Presentation
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(authOptions.SecretKey))
                     };
                 });
-
+            services.AddHttpContextAccessor();
 
             return services;
         }

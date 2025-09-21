@@ -11,12 +11,10 @@ namespace KvizAPI.Domain.Entities
 
         public string? Email { get; set; }
 
-        // Stored hashed password (do not expose in DTO)
         public string? PasswordHash { get; set; }
 
-        public bool? IsDeleted { get; set; }
+        public bool? IsDeleted { get; set; } = false;
 
-        // Navigation: quizzes created by the user
         public List<Quiz>? Quizzes { get; set; }
     }
 }

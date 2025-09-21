@@ -8,63 +8,67 @@ using System.IdentityModel.Tokens.Jwt;
 using KvizAPI.Application.DTO;
 using KvizAPI.Domain.Entities;
 using KvizAPI.Infrastructure.DBContexts;
+using KvizAPI.Application.Common.Security;
+using Microsoft.Extensions.Options;
+using KvizAPI.Domain.Interfaces;
 
 namespace KvizAPI.Application.Services
 {
-    public class AuthService
+    public class AuthService(QuizDbContext db, IOptions<AuthOptions> options) : IAuthService
     {
-        private readonly QuizDbContext _db;
-        private readonly AuthOptions _options;
-
-        public AuthService(QuizDbContext db, AuthOptions options)
-        {
-            _db = db;
-            _options = options;
-        }
-
-        public async Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request)
+        public async Task<AuthResultDto> RegisterAsync(RegisterRequestDto request)
         {
             if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
-                throw new ArgumentException("Username and password are required");
+            {
+                return new AuthResultDto { Success = false, Error = "Username and password are required" };
+            }
+            var exists = await db.Users.AnyAsync(u => u.Username == request.Username || u.Email == request.Email);
+            if (exists)
+            {
+                return new AuthResultDto { Success = false, Error = "User already exists" };
+            }
 
-            // check if user exists
-            var exists = await _db.Users.AnyAsync(u => u.Username == request.Username || u.Email == request.Email);
-            if (exists) throw new InvalidOperationException("User already exists");
-
-            // hash password - for demo use simple SHA256; replace with a proper password hasher in production
-            using var sha = System.Security.Cryptography.SHA256.Create();
-            var hash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(request.Password ?? string.Empty)));
+            var hash = PasswordHelper.HashPassword(request.Password);
 
             var user = new User
             {
                 Username = request.Username,
                 Email = request.Email,
                 PasswordHash = hash,
-                IsDeleted = false
             };
 
-            _db.Users.Add(user);
-            await _db.SaveChangesAsync();
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
 
-            return await GenerateTokenAsync(user);
+            var token = await GenerateTokenAsync(user);
+            return new AuthResultDto
+            {
+                Success = true,
+                Token = token.Token,
+                ExpiresAt = token.ExpiresAt
+            };
         }
 
-        public async Task<AuthResponseDto> LoginAsync(LoginRequestDto request)
+        public async Task<AuthResultDto> LoginAsync(LoginRequestDto request)
         {
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-            if (user == null) throw new InvalidOperationException("Invalid credentials");
+            var user = await db.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
+            if (user == null || !PasswordHelper.Verify(user.PasswordHash, request.Password))
+            {
+                return new AuthResultDto { Success = false, Error = "Invalid credentials" };
+            }
 
-            using var sha = System.Security.Cryptography.SHA256.Create();
-            var hash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(request.Password ?? string.Empty)));
-
-            if (user.PasswordHash != hash) throw new InvalidOperationException("Invalid credentials");
-
-            return await GenerateTokenAsync(user);
+            var token = await GenerateTokenAsync(user);
+            return new AuthResultDto
+            {
+                Success = true,
+                Token = token.Token,
+                ExpiresAt = token.ExpiresAt
+            };
         }
 
         private Task<AuthResponseDto> GenerateTokenAsync(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SecretKey));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(options.Value.SecretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -74,7 +78,7 @@ namespace KvizAPI.Application.Services
             };
 
             var expires = DateTime.UtcNow.AddHours(6);
-            var token = new JwtSecurityToken(_options.Issuer, _options.Audience, claims, expires: expires, signingCredentials: creds);
+            var token = new JwtSecurityToken(options.Value.Issuer, options.Value.Audience, claims, expires: expires, signingCredentials: creds);
             var tokenStr = new JwtSecurityTokenHandler().WriteToken(token);
 
             return Task.FromResult(new AuthResponseDto { Token = tokenStr, ExpiresAt = expires });

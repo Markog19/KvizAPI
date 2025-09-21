@@ -9,6 +9,5 @@ namespace KvizAPI.Domain.Interfaces
         Task<List<QuizDto>> GetAllQuizzesWithQuestionsAsync();
         Task UpdateQuizAsync(Guid quizId, string newName, List<QuestionDto> updatedQuestions);
         Task DeleteQuizAsync(Guid quizId);
-        Task<List<QuestionDto>> GetQuestions(string searchString);
     }
 }

@@ -91,18 +91,7 @@ namespace KvizAPI.Application.Services
                 .ToListAsync();
         }
 
-        public Task<List<QuestionDto>> GetQuestions(string searchString)
-        {
-           return quizDbContext.Questions
-                .Where(q => q.Text.Contains(searchString))
-                .Select(q => new QuestionDto
-                {
-                    Id = q.Id,
-                    Text = q.Text,
-                    Answer = q.Answer
-                })
-                .ToListAsync();
-        }
+        
 
      
         public async Task UpdateQuizAsync(Guid quizId, string newName, List<QuestionDto> updatedQuestions)

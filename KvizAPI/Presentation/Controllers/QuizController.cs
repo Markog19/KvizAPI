@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using KvizAPI.Application.DTO;
 using KvizAPI.Domain.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 
 namespace KvizAPI.Presentation.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class QuizController(IQuizService quizService) : ControllerBase
@@ -23,9 +25,16 @@ namespace KvizAPI.Presentation.Controllers
         [HttpPost]
         public async Task<ActionResult> Create([FromBody] QuizDto quiz)
         {
-            if (quiz == null) return BadRequest();
-
-            await quizService.CreateQuizAsync(quiz.Id, quiz.Name ?? string.Empty, quiz.Questions ?? new List<QuestionDto>());
+            if (quiz == null)
+            {
+                return BadRequest();
+            }
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (!Guid.TryParse(idClaim, out var userId))
+            {
+                return Unauthorized();
+            }
+            await quizService.CreateQuizAsync(userId, quiz.Name ?? string.Empty, quiz.Questions ?? new List<QuestionDto>());
             return CreatedAtAction(nameof(Create), new { id = quiz.Id }, null);
         }
 
@@ -37,6 +46,8 @@ namespace KvizAPI.Presentation.Controllers
             await quizService.UpdateQuizAsync(id, quiz.Name ?? string.Empty, quiz.Questions ?? new List<QuestionDto>());
             return Ok();
         }
+
+        
 
         // DELETE: api/quiz/{id}
         [HttpDelete("{id}")]

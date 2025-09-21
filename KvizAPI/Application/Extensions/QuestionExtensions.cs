@@ -19,7 +19,10 @@ namespace KvizAPI.Application.Extensions
 
         public static List<QuestionDto> ToDtoList(this IEnumerable<Question>? questions)
         {
-            if (questions == null) return [];
+            if (questions == null)
+            {
+                return [];
+            }
             return questions.Select(q => q.ToDto()).ToList();
         }
     }
