@@ -140,7 +140,6 @@ namespace KvizAPI.Application.Services
                     quiz.Questions = [.. updatedQuestions.Select(q => new Question
                 {
                     Text = q.Text,
-                    IsDeleted = false,
                     Answer = q.Answer
                 })];
                     quiz.Name = newName;
