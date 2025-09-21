@@ -61,4 +61,4 @@ appsettings.Development.json
 
 # Other
 *.userprefs
-
+Logs/
