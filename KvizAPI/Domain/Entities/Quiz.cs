@@ -8,7 +8,7 @@ namespace KvizAPI.Domain.Entities
         public Guid Id { get; set; } = Guid.NewGuid();
 
         public string? Name { get; set; }
-        public bool? IsDeleted { get; set; }
+        public bool? IsDeleted { get; set; } = false;
 
         public List<Question>? Questions { get; set; }
 
