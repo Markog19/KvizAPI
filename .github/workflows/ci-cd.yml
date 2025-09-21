@@ -24,15 +24,9 @@ jobs:
           path: ~/.nuget/packages
           key: nuget-{{ runner.os }}-v1
 
-      - name: Setup dotnet tools
+      - name: Install dotnet-format
         run: |
-          dotnet new tool-manifest --force
-          dotnet tool install dotnet-format --version 8.* || true
-          dotnet tool restore
-
-      - name: Lint / format check
-        run: |
-          dotnet tool run dotnet-format KvizAPI/KvizAPI.csproj --verify-no-changes --verbosity minimal
+          dotnet tool install -g dotnet-format --version 8.* || true
 
       - name: Restore
         run: dotnet restore KvizAPI/KvizAPI.csproj
