@@ -36,7 +36,8 @@ namespace KvizAPI.Infrastructure.DBContexts
 
             modelBuilder.Entity<Quiz>()
                 .HasIndex(q => q.Name)
-                .HasDatabaseName("IX_Quizzes_Name");
+                .HasDatabaseName("IX_Quizzes_Name")
+                .IsUnique();
 
             modelBuilder.Entity<Quiz>()
                 .HasOne(q => q.User)

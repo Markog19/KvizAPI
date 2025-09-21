@@ -16,12 +16,13 @@ namespace KvizAPI.Application.Services
         {
             if(questions == null || questions.Count == 0)
             {
-                questions = quizDbContext.Questions.Take(20).ToList().ToDtoList();
+                questions = quizDbContext.Questions
+                    .OrderBy(q => Guid.NewGuid())
+                    .Take(20)
+                    .ToList()
+                    .ToDtoList();
             }
-            if(quizDbContext.Quizzes.Any(q => q.Name == quizName && q.UserId == userId))
-            {
-                quizName += " (1)";
-            }
+            
             var quiz = new Quiz
             {
                 Name = quizName,

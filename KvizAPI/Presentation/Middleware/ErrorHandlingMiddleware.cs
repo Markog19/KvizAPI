@@ -16,8 +16,8 @@
                 context.Response.ContentType = "application/json";
                 var response = new
                 {
-                    Message = "An unexpected error occurred.",
-                    Details = ex.Message
+                    ex.Message,
+                    Details = ex.InnerException.Message ?? string.Empty
                 };
                 await context.Response.WriteAsJsonAsync(response);
             }
