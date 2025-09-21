@@ -10,11 +10,17 @@ namespace KvizAPI.Application.Services
 {
     public class QuizService(QuizDbContext quizDbContext) : IQuizService
     {
+
+
         public Task CreateQuizAsync(Guid userId, string quizName, List<QuestionDto> questions)
         {
             if(questions == null || questions.Count == 0)
             {
                 questions = quizDbContext.Questions.Take(20).ToList().ToDtoList();
+            }
+            if(quizDbContext.Quizzes.Any(q => q.Name == quizName && q.UserId == userId))
+            {
+                quizName += " (1)";
             }
             var quiz = new Quiz
             {
@@ -63,17 +69,21 @@ namespace KvizAPI.Application.Services
             }
         }
 
-        public Task<List<string>> GetAllQuizzesAsync()
+        public Task<List<QuizDto>> GetAllQuizzesAsync(Guid userId)
         {
-            return quizDbContext.Quizzes
-                .Select(q => q.Name)
+            return quizDbContext.Quizzes.Where(q => q.UserId == userId)
+                .Select(q => new QuizDto
+                {
+                    Id = q.Id,
+                    Name = q.Name
+                })
                 .ToListAsync();
         }
 
-        public Task<List<QuizDto>> GetAllQuizzesWithQuestionsAsync()
+        public Task<List<QuizDto>> GetAllQuizzesWithQuestionsAsync(Guid userId)
         {
-            return quizDbContext.Quizzes
-                .Include(q => q.QuestionQuizzes.Where(qq => qq.IsDeleted == false))
+            return quizDbContext.Quizzes.Where(q => q.UserId == userId)
+                .Include(q => q.QuestionQuizzes)
                     .ThenInclude(qq => qq.Question)
                 .Select(q => new QuizDto
                 {
@@ -91,9 +101,29 @@ namespace KvizAPI.Application.Services
                 .ToListAsync();
         }
 
-        
+        public async Task<QuizDto> GetQuizzWithQuestionsAsync(Guid userId, Guid quizId)
+        {
+            return await quizDbContext.Quizzes
+                .Where(q => q.UserId == userId)
+                .Where(q => q.Id == quizId)
+                .Include(q => q.QuestionQuizzes)
+                    .ThenInclude(qq => qq.Question)
+                .Select(q => new QuizDto
+                {
+                    Id = q.Id,
+                    Name = q.Name,
+                    Questions = q.QuestionQuizzes
+                        .Select(qq => new QuestionDto
+                        {
+                            Id = qq.Question.Id,
+                            Text = qq.Question.Text,
+                            Answer = qq.Question.Answer
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync() ?? new QuizDto();
+        }
 
-     
         public async Task UpdateQuizAsync(Guid quizId, string newName, List<QuestionDto> updatedQuestions)
         {
             var transaction = await quizDbContext.Database.BeginTransactionAsync();

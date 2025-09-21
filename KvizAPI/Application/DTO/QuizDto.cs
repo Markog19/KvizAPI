@@ -10,6 +10,6 @@ namespace KvizAPI.Application.DTO
         public string? Name { get; set; }
 
 
-        public List<QuestionDto>? Questions { get; set; }
+        public List<QuestionDto>? Questions { get; set; } = new List<QuestionDto>();
     }
 }

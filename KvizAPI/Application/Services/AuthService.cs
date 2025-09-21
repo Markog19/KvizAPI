@@ -49,6 +49,8 @@ namespace KvizAPI.Application.Services
             };
         }
 
+       
+
         public async Task<AuthResultDto> LoginAsync(LoginRequestDto request)
         {
             var user = await db.Users.FirstOrDefaultAsync(u => u.Username == request.Username);

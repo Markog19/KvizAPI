@@ -6,7 +6,6 @@ namespace KvizAPI.Domain.Entities
     public class Quiz
     {
         public Guid Id { get; set; } = Guid.NewGuid();
-
         public string? Name { get; set; }
         public bool? IsDeleted { get; set; } = false;
 
