@@ -17,7 +17,7 @@
                 var response = new
                 {
                     ex.Message,
-                    Details = ex.InnerException.Message ?? string.Empty
+                    Details = ex.InnerException?.Message ?? string.Empty
                 };
                 await context.Response.WriteAsJsonAsync(response);
             }

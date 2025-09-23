@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using KvizAPI.Application.Services;
 using KvizAPI.Application.Common;
+using KvizAPI.Domain.Interfaces;
 
 namespace KvizAPI.Presentation
 {
@@ -20,7 +21,9 @@ namespace KvizAPI.Presentation
         {
             services.AddDbContext<QuizDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-
+            services.AddScoped<IQuestionsService, QuestionsService>();
+            services.AddScoped<IQuizService, QuizService>();
+            services.AddScoped<IAuthService, AuthService>();
             services.Configure<AuthOptions>(configuration.GetSection("AuthOptions"));
             services.Configure<CacheSettings>(configuration.GetSection("CacheSettings"));
 

@@ -46,8 +46,15 @@ namespace KvizAPI.Presentation.Controllers
             if (!cache.TryGetValue(cacheKey, out IEnumerable<QuizDto> quizzes))
             {
                 quizzes = await quizService.GetAllQuizzesWithQuestionsAsync(userId);
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(cacheSettings.Value.QuizzesWithQuestionsExpirationMinutes));
-                cache.Set(cacheKey, quizzes, cacheEntryOptions);
+                if (quizzes != null)
+                {
+                    var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(cacheSettings.Value.QuizzesWithQuestionsExpirationMinutes));
+                    cache.Set(cacheKey, quizzes, cacheEntryOptions); 
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
             return Ok(quizzes);
         }
@@ -64,8 +71,15 @@ namespace KvizAPI.Presentation.Controllers
             if (!cache.TryGetValue(cacheKey, out QuizDto quiz))
             {
                 quiz = await quizService.GetQuizzWithQuestionsAsync(userId, quizId);
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(cacheSettings.Value.QuizWithQuestionsExpirationMinutes));
-                cache.Set(cacheKey, quiz, cacheEntryOptions);
+                if (quiz != null)
+                {
+                    var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(cacheSettings.Value.QuizWithQuestionsExpirationMinutes));
+                    cache.Set(cacheKey, quiz, cacheEntryOptions); 
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
             return Ok(quiz);
         }

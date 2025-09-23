@@ -123,37 +123,56 @@ namespace KvizAPI.Application.Services
                         })
                         .ToList()
                 })
-                .FirstOrDefaultAsync() ?? new QuizDto();
+                .FirstOrDefaultAsync();
         }
 
         public async Task UpdateQuizAsync(Guid quizId, string newName, List<QuestionDto> updatedQuestions)
         {
-            var transaction = await quizDbContext.Database.BeginTransactionAsync();
+            await using var transaction = await quizDbContext.Database.BeginTransactionAsync();
 
             try
             {
                 var quiz = await quizDbContext.Quizzes
-                    .FindAsync(quizId);
+                    .Include(q => q.QuestionQuizzes)
+                    .ThenInclude(qq => qq.Question)
+                    .FirstOrDefaultAsync(q => q.Id == quizId);
 
                 if (quiz != null)
                 {
-                    quiz.Questions = [.. updatedQuestions.Select(q => new Question
-                {
-                    Text = q.Text,
-                    Answer = q.Answer
-                })];
                     quiz.Name = newName;
+
+                    quizDbContext.QuestionQuizzes.RemoveRange(quiz.QuestionQuizzes);
+
+                    await quizDbContext.SaveChangesAsync();
+
+                    quiz.QuestionQuizzes = updatedQuestions.Select(q => new QuestionQuiz
+                    {
+                        QuizId = quiz.Id,
+                        Question = new Question
+                        {
+                            Text = q.Text,
+                            Answer = q.Answer,
+                            IsDeleted = false
+                        },
+                        IsDeleted = false
+                    }).ToList();
+
+                    quizDbContext.QuestionQuizzes.AddRange(quiz.QuestionQuizzes);
+
+                    await quizDbContext.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 }
-                await quizDbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
+                else
+                {
+                    await transaction.RollbackAsync();
+                }
             }
             catch (Exception)
             {
-                transaction.Rollback();
+                await transaction.RollbackAsync();
                 throw;
             }
-
-
         }
     }
+    
 }
