@@ -22,8 +22,7 @@ KvizAPI is a modular quiz application built with ASP.NET Core (.NET 8). It provi
 - **Type:** xUnit Test Project
 - **Purpose:** Contains unit and integration tests for the API and services, ensuring code quality and correctness.
 - **Key Features:**
-  - In-memory and containerized database testing
-  - Service and controller tests
+  - Service  tests
 
 ## Technologies Used
 - .NET 8
