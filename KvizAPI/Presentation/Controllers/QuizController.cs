@@ -3,13 +3,16 @@ using KvizAPI.Application.DTO;
 using KvizAPI.Domain.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Plugins.DTOs;
+using Microsoft.Extensions.Caching.Memory;
+using KvizAPI.Application.Common;
+using Microsoft.Extensions.Options;
 
 namespace KvizAPI.Presentation.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/[controller]")]
-    public class QuizController(IQuizService quizService) : ControllerBase
+    public class QuizController(IQuizService quizService, IMemoryCache cache, IOptions<CacheSettings> cacheSettings) : ControllerBase
     {
         
 
@@ -21,7 +24,13 @@ namespace KvizAPI.Presentation.Controllers
             {
                 return value;
             }
-            var quizzes = await quizService.GetAllQuizzesAsync(userId);
+            var cacheKey = CacheKeys.Quizzes(userId);
+            if (!cache.TryGetValue(cacheKey, out IEnumerable<QuizDto> quizzes))
+            {
+                quizzes = await quizService.GetAllQuizzesAsync(userId);
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(cacheSettings.Value.QuizzesExpirationMinutes));
+                cache.Set(cacheKey, quizzes, cacheEntryOptions);
+            }
             return Ok(quizzes);
         }
 
@@ -33,19 +42,32 @@ namespace KvizAPI.Presentation.Controllers
             {
                 return value;
             }
-            var quizzes = await quizService.GetAllQuizzesWithQuestionsAsync(userId);
+            var cacheKey = CacheKeys.QuizzesWithQuestions(userId);
+            if (!cache.TryGetValue(cacheKey, out IEnumerable<QuizDto> quizzes))
+            {
+                quizzes = await quizService.GetAllQuizzesWithQuestionsAsync(userId);
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(cacheSettings.Value.QuizzesWithQuestionsExpirationMinutes));
+                cache.Set(cacheKey, quizzes, cacheEntryOptions);
+            }
             return Ok(quizzes);
         }
+
         [HttpGet("OneWithQuestions/{quizId}")]
-        public async Task<ActionResult<IEnumerable<QuizDto>>> GetOneWithQuestions(Guid quizId)
+        public async Task<ActionResult<QuizDto>> GetOneWithQuestions(Guid quizId)
         {
             (bool flowControl, ActionResult value) = GetCurrentUser(out Guid userId);
             if (!flowControl)
             {
                 return value;
             }
-            var quizzes = await quizService.GetQuizzWithQuestionsAsync(userId,quizId);
-            return Ok(quizzes);
+            var cacheKey = CacheKeys.QuizWithQuestions(userId, quizId);
+            if (!cache.TryGetValue(cacheKey, out QuizDto quiz))
+            {
+                quiz = await quizService.GetQuizzWithQuestionsAsync(userId, quizId);
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(cacheSettings.Value.QuizWithQuestionsExpirationMinutes));
+                cache.Set(cacheKey, quiz, cacheEntryOptions);
+            }
+            return Ok(quiz);
         }
 
         // POST: api/quiz
@@ -62,26 +84,41 @@ namespace KvizAPI.Presentation.Controllers
                 return value;
             }
             await quizService.CreateQuizAsync(userId, quiz.Name ?? string.Empty, quiz.Questions ?? new List<QuestionDto>());
+            cache.Remove(CacheKeys.Quizzes(userId));
+            cache.Remove(CacheKeys.QuizzesWithQuestions(userId));
             return CreatedAtAction(nameof(Create), new { id = quiz.Id }, null);
         }
 
-        
         // PUT: api/quiz/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] QuizDto quiz)
         {
             if (quiz == null) return BadRequest();
             await quizService.UpdateQuizAsync(id, quiz.Name ?? string.Empty, quiz.Questions ?? new List<QuestionDto>());
+            (bool flowControl, ActionResult value) = GetCurrentUser(out Guid userId);
+            if (!flowControl)
+            {
+               return value;
+            }
+            cache.Remove(CacheKeys.Quizzes(userId));
+            cache.Remove(CacheKeys.QuizzesWithQuestions(userId));
+            cache.Remove(CacheKeys.QuizWithQuestions(userId, id));
             return Ok();
         }
-
-        
 
         // DELETE: api/quiz/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             await quizService.DeleteQuizAsync(id);
+            (bool flowControl, ActionResult value) = GetCurrentUser(out Guid userId);
+            if (!flowControl)
+            {
+                return value;
+            }
+            cache.Remove(CacheKeys.Quizzes(userId));
+            cache.Remove(CacheKeys.QuizzesWithQuestions(userId));
+            cache.Remove(CacheKeys.QuizWithQuestions(userId, id));
             return Ok();
         }
         private (bool flowControl, ActionResult value) GetCurrentUser(out Guid userId)
@@ -94,6 +131,5 @@ namespace KvizAPI.Presentation.Controllers
 
             return (flowControl: true, value: null);
         }
-
     }
 }

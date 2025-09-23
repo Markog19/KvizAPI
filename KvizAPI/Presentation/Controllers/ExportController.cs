@@ -16,7 +16,6 @@ namespace KvizAPI.Presentation.Controllers
     public class ExportController : ControllerBase
     {
         private readonly IEnumerable<IQuizPlugin> Plugins;
-        private readonly QuizDbContext _dbContext;
 
         public IQuizService _quizService { get; }
         //C:\\Users\\User\\source\\repos\\KvizAPI\\KvizAPI\\bin\\Debug\\net8.0\\
@@ -31,7 +30,6 @@ namespace KvizAPI.Presentation.Controllers
             var config = new ContainerConfiguration().WithAssemblies(pluginAssemblies);
             using var container = config.CreateContainer();
             Plugins = container.GetExports<IQuizPlugin>();
-            _dbContext = dbContext;
             _quizService = quizService;
         }
         [HttpGet]

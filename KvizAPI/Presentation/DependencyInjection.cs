@@ -10,7 +10,7 @@ using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using KvizAPI.Application.Services;
-using KvizAPI.Domain.Interfaces;
+using KvizAPI.Application.Common;
 
 namespace KvizAPI.Presentation
 {
@@ -22,9 +22,8 @@ namespace KvizAPI.Presentation
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
             services.Configure<AuthOptions>(configuration.GetSection("AuthOptions"));
-            services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IQuizService, QuizService>();
-            services.AddScoped<IQuestionsService, QuestionsService>();
+            services.Configure<CacheSettings>(configuration.GetSection("CacheSettings"));
+
             var authOptions = configuration
                 .GetSection("AuthOptions")
                 .Get<AuthOptions>();
@@ -45,6 +44,7 @@ namespace KvizAPI.Presentation
                     };
                 });
             services.AddHttpContextAccessor();
+            services.AddMemoryCache();
 
             return services;
         }

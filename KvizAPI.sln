@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KvizAPI", "KvizAPI\KvizAPI.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugins", "Plugins\Plugins.csproj", "{9C3D4014-594F-4590-B616-A2B1741642C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KvizApi.Tests", "KvizApi.Tests\KvizApi.Tests.csproj", "{399CE7EA-F4F3-4794-B70F-E8AB4FD1F5D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{9C3D4014-594F-4590-B616-A2B1741642C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9C3D4014-594F-4590-B616-A2B1741642C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9C3D4014-594F-4590-B616-A2B1741642C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{399CE7EA-F4F3-4794-B70F-E8AB4FD1F5D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{399CE7EA-F4F3-4794-B70F-E8AB4FD1F5D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{399CE7EA-F4F3-4794-B70F-E8AB4FD1F5D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{399CE7EA-F4F3-4794-B70F-E8AB4FD1F5D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
